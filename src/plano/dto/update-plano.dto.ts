@@ -12,6 +12,11 @@ export class UpdatePlanoDto {
   @ApiProperty()
   duration: number;
 
+  @IsInt()
+  @IsNotEmpty()
+  @ApiProperty()
+  screen: number;
+
   @IsNumber()
   @IsNotEmpty()
   @ApiProperty()

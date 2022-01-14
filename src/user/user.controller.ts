@@ -6,12 +6,15 @@ import {
   Patch,
   Param,
   Delete,
+  UseGuards,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from '@prisma/client';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiTags, ApiBearerAuth } from '@nestjs/swagger';
+import { AuthUser } from '../auth/auth-user.decorator';
+import { AuthGuard } from '@nestjs/passport';
 
 @ApiTags('user')
 @Controller('user')
@@ -56,5 +59,25 @@ export class UserController {
   })
   remove(@Param('id') id: string): Promise<{ message: string }> {
     return this.service.remove(id);
+  }
+
+  @UseGuards(AuthGuard())
+  @Patch('addList/:id')
+  @ApiOperation({
+    summary: 'Adiciona ou remove item do carrinho',
+  })
+  @ApiBearerAuth()
+  addList(@AuthUser() user: User, @Param('id') planoId: string) {
+    return this.service.addList(user, planoId);
+  }
+ 
+  @UseGuards(AuthGuard())
+  @Get('cartList')
+  @ApiOperation({
+    summary: 'Retorna a lista do carrinho',
+  })
+  @ApiBearerAuth()
+  cartList(@AuthUser() user: User) {
+    return this.service.cartList(user.id);
   }
 }

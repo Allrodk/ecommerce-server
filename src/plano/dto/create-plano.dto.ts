@@ -2,7 +2,6 @@ import { IsString, IsNotEmpty, MinLength, IsInt } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreatePlanoDto {
-
   @IsString()
   @IsNotEmpty()
   @MinLength(6)
@@ -10,17 +9,22 @@ export class CreatePlanoDto {
   name: string;
 
   @IsString()
-  @IsNotEmpty() 
+  @IsNotEmpty()
   @ApiProperty()
   imageUrl: string;
 
   @IsInt()
-  @IsNotEmpty() 
+  @IsNotEmpty()
   @ApiProperty()
   duration: number;
 
   @IsInt()
-  @IsNotEmpty() 
+  @IsNotEmpty()
+  @ApiProperty()
+  screen: number;
+
+  @IsInt()
+  @IsNotEmpty()
   @ApiProperty()
   price: number;
 }

@@ -131,17 +131,53 @@ export class UserService {
       throw new NotFoundException('Plano não encontrado');
     }
 
-    const listPlanos = await this.database.user.update({
+    const userPlanos = await this.database.user.findUnique({
       where: { id: user.id },
-      data: {
-        planos: {
-          connect: { id: plano.id },
-        },
-      },
       include: { planos: true },
     });
 
-    delete listPlanos.password;
-    return listPlanos;
+    const listPlanos = userPlanos.planos;
+    let foundPlano = false;
+
+    listPlanos.map((plano) => {
+      if (planoId === plano.id) {
+        foundPlano = true;
+      }
+    });
+
+    if (foundPlano) {
+      await this.database.user.update({
+        where: { id: user.id },
+        data: {
+          planos: {
+            disconnect: {
+              id: plano.id,
+            },
+          },
+        },
+      });
+      return { message: 'Plano removido do carrinho' };
+    } else {
+      await this.database.user.update({
+        where: { id: user.id },
+        data: {
+          planos: {
+            connect: {
+              id: plano.id,
+            },
+          },
+        },
+      });
+      return { message: 'Plano adicionado ao carrinho' };
+    }
+  }
+
+  async cartList(userId: string) {
+    console.log(userId);
+    const planos = await this.database.user.findUnique({
+      where: { id: userId },
+      include: { planos: true },
+    });
+    return planos;
   }
 }
