@@ -18,6 +18,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     const user = await this.database.user.findUnique({
       where: { email: payload.email },
     });
+    console.log(`Carregou Payload: ${payload.email}`);
     return user;
   }
 }

@@ -4,6 +4,8 @@ import { CreateManyPlanoDto } from './dto/create-many-plano.dto';
 import { UpdatePlanoDto } from './dto/update-plano.dto';
 import { PrismaService } from 'src/prisma.service';
 import { Plano } from '@prisma/client';
+import { UpdatePlanilhaDto } from './dto/update-planilha.dto';
+import { UpdateSinglePlanoDto } from './dto/upadate-singlePlano.dto';
 
 @Injectable()
 export class PlanoService {
@@ -20,10 +22,10 @@ export class PlanoService {
     const createPlanos = [];
     await Promise.all(
       data.planos.map(async (plano) => {
-        const planoExist = await this.findPerName(plano.name);
-        if (!planoExist) {
+        // const planoExist = await this.findPerName(plano.name);
+        // if (!planoExist) {
           createPlanos.push(await this.create(plano));
-        }
+        // }
       }),
     );
     return createPlanos;
@@ -52,6 +54,32 @@ export class PlanoService {
       data: planoData,
     });
     return plano;
+  }
+
+  async updateSingle(
+    name: string,
+    planoData: UpdateSinglePlanoDto,
+  ): Promise<Plano> {
+    const singlePlano = await this.findPerName(name);
+    const plano = await this.database.plano.update({
+      where: { id: singlePlano.id },
+      data: planoData,
+    });
+    return plano;
+  }
+
+  async updateMany(manyData: UpdatePlanilhaDto): Promise<any[]> {
+    const updatePlanos = [];
+    await Promise.all(
+      manyData.data.map(async (plano) => {
+        const planoExist = await this.findPerName(plano.name);
+        console.log(planoExist);
+        if (planoExist) {
+          updatePlanos.push(await this.updateSingle(plano.name, plano));
+        }
+      }),
+    );
+    return updatePlanos;
   }
 
   async remove(id: string): Promise<{ message: string }> {

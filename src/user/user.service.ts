@@ -172,8 +172,7 @@ export class UserService {
     }
   }
 
-  async cartList(userId: string) {
-    console.log(userId);
+  async cartList(userId: string) {   
     const planos = await this.database.user.findUnique({
       where: { id: userId },
       include: { planos: true },

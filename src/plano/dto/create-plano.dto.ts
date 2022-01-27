@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, MinLength, IsInt } from 'class-validator';
+import { IsString, IsNotEmpty, MinLength, IsInt, IsNumber } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreatePlanoDto {
@@ -23,7 +23,7 @@ export class CreatePlanoDto {
   @ApiProperty()
   screen: number;
 
-  @IsInt()
+  @IsNumber()
   @IsNotEmpty()
   @ApiProperty()
   price: number;

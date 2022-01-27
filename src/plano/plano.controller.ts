@@ -6,6 +6,8 @@ import {
   Patch,
   Param,
   Delete,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
 import { PlanoService } from './plano.service';
 import { CreatePlanoDto } from './dto/create-plano.dto';
@@ -13,6 +15,39 @@ import { CreateManyPlanoDto } from './dto/create-many-plano.dto';
 import { UpdatePlanoDto } from './dto/update-plano.dto';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Plano } from '@prisma/client';
+import { UpdatePlanilhaDto } from './dto/update-planilha.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import path, { extname } from 'path';
+import { Observable, of } from 'rxjs';
+
+export const storage = {
+  storage: diskStorage({
+    destination: './Uploads',
+    filename: (req, file, cb) => {
+      const filename: string = file.originalname;
+      console.log(filename);
+      const extension: string = extname(file.originalname);
+
+      cb(null, `${filename}`);
+    },
+  }),
+};
+export const filefilter = {
+  filefilter: (req, file, cb) => {
+    const allowedMimes = [
+      'text/csv',
+      'application/vnd.ms-excel',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    ];
+    console.log(`Mime: ${file.mimetype}`);
+    if (allowedMimes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Tipo de arquivo inválido'));
+    }
+  },
+};
 
 @ApiTags('plano')
 @Controller('plano')
@@ -60,6 +95,21 @@ export class PlanoController {
     @Body() data: UpdatePlanoDto,
   ): Promise<Plano> {
     return this.service.update(id, data);
+  }
+
+  @Patch('updateMany')
+  @ApiOperation({
+    summary: 'Edita vários planos',
+  })
+  updateMany(@Body() manyData: UpdatePlanilhaDto): Promise<any[]> {
+    return this.service.updateMany(manyData);
+  }
+
+  @Post('upload')
+  @UseInterceptors(FileInterceptor('', storage, filefilter))
+  uploadFile(@UploadedFile() file): Observable<Object> {
+    console.log(file);
+    return of({ filePath: file.filename });
   }
 
   @Delete('remove/:id')
