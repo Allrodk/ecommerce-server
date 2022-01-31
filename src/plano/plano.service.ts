@@ -6,6 +6,10 @@ import { PrismaService } from 'src/prisma.service';
 import { Plano } from '@prisma/client';
 import { UpdatePlanilhaDto } from './dto/update-planilha.dto';
 import { UpdateSinglePlanoDto } from './dto/upadate-singlePlano.dto';
+import * as XLSX from 'XLSX';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
+const fs = require('fs');
 
 @Injectable()
 export class PlanoService {
@@ -24,7 +28,7 @@ export class PlanoService {
       data.planos.map(async (plano) => {
         // const planoExist = await this.findPerName(plano.name);
         // if (!planoExist) {
-          createPlanos.push(await this.create(plano));
+        createPlanos.push(await this.create(plano));
         // }
       }),
     );
@@ -73,7 +77,6 @@ export class PlanoService {
     await Promise.all(
       manyData.data.map(async (plano) => {
         const planoExist = await this.findPerName(plano.name);
-        console.log(planoExist);
         if (planoExist) {
           updatePlanos.push(await this.updateSingle(plano.name, plano));
         }
@@ -98,5 +101,51 @@ export class PlanoService {
       throw new NotFoundException('Plano não encontrado');
     }
     return planoExist;
+  }
+
+  storage() {
+     storage: diskStorage({
+      destination: './Uploads',
+      filename: (req, file, cb) => {
+        const filename: string = file.originalname;
+        const extension: string = extname(file.originalname);
+        const allowedMimes = ['.csv', '.xls', '.xlsx'];
+        if (allowedMimes.includes(extension)) {
+          cb(null, `${filename}`);
+        } else {
+           cb(new Error('Tipo de arquivo inválido'), `${filename}`);
+        }
+      },
+    });
+  }
+
+  readFile() {
+    let filePath = '';
+    if (fs.existsSync('./Uploads/UpdateMany100.xlsx')) {
+      filePath = './Uploads/UpdateMany100.xlsx';
+    }
+    if (fs.existsSync('./Uploads/UpdateMany100.xls')) {
+      filePath = './Uploads/UpdateMany100.xls';
+    }
+    if (fs.existsSync('./Uploads/UpdateMany100.csv')) {
+      filePath = './Uploads/UpdateMany100.csv';
+    }
+    let data = [];
+    const wb = XLSX.readFile(filePath);
+    for (const sheet in wb.Sheets) {
+      if (wb.Sheets.hasOwnProperty(sheet)) {
+        data = data.concat(XLSX.utils.sheet_to_json(wb.Sheets[sheet]));
+        break;
+      }
+    }
+    return { data, filePath };
+  }
+
+  deleteFile(filePath) {
+    fs.unlink(filePath, function (err) {
+      if (err) {
+        throw new NotFoundException(err);
+      }
+    });
   }
 }

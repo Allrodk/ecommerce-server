@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   UseGuards,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -15,6 +16,7 @@ import { User } from '@prisma/client';
 import { ApiOperation, ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { AuthUser } from '../auth/auth-user.decorator';
 import { AuthGuard } from '@nestjs/passport';
+import { AuthAdmin } from 'src/auth/auth-admin.decorator';
 
 @ApiTags('user')
 @Controller('user')
@@ -46,9 +48,11 @@ export class UserController {
   }
 
   @Get('findOne/:id')
+  @UseGuards(AuthGuard())
   @ApiOperation({
     summary: 'Retorna um usuário',
   })
+  @ApiBearerAuth()
   findOne(@Param('id') id: string): Promise<User> {
     return this.service.findOne(id);
   }
@@ -67,10 +71,11 @@ export class UserController {
     summary: 'Adiciona ou remove item do carrinho',
   })
   @ApiBearerAuth()
-  addList(@AuthUser() user: User, @Param('id') planoId: string) {
+  
+  addList(@AuthAdmin() user: User, @Param('id') planoId: string) {      
     return this.service.addList(user, planoId);
   }
- 
+
   @UseGuards(AuthGuard())
   @Get('cartList')
   @ApiOperation({

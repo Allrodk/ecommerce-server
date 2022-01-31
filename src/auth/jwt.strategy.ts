@@ -7,6 +7,7 @@ import { jwtConstants } from './jwt.constants';
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(private database: PrismaService) {
+  
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
@@ -18,7 +19,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     const user = await this.database.user.findUnique({
       where: { email: payload.email },
     });
-    console.log(`Carregou Payload: ${payload.email}`);
     return user;
-  }
+  }  
 }

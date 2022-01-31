@@ -17,37 +17,9 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Plano } from '@prisma/client';
 import { UpdatePlanilhaDto } from './dto/update-planilha.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
-import path, { extname } from 'path';
 import { Observable, of } from 'rxjs';
+import {Storage} from './config'
 
-export const storage = {
-  storage: diskStorage({
-    destination: './Uploads',
-    filename: (req, file, cb) => {
-      const filename: string = file.originalname;
-      console.log(filename);
-      const extension: string = extname(file.originalname);
-
-      cb(null, `${filename}`);
-    },
-  }),
-};
-export const filefilter = {
-  filefilter: (req, file, cb) => {
-    const allowedMimes = [
-      'text/csv',
-      'application/vnd.ms-excel',
-      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    ];
-    console.log(`Mime: ${file.mimetype}`);
-    if (allowedMimes.includes(file.mimetype)) {
-      cb(null, true);
-    } else {
-      cb(new Error('Tipo de arquivo inválido'));
-    }
-  },
-};
 
 @ApiTags('plano')
 @Controller('plano')
@@ -106,9 +78,15 @@ export class PlanoController {
   }
 
   @Post('upload')
-  @UseInterceptors(FileInterceptor('', storage, filefilter))
+  @ApiOperation({
+    summary: 'Faz upload de arquivos',
+  })
+  @UseInterceptors(FileInterceptor('file', Storage))
   uploadFile(@UploadedFile() file): Observable<Object> {
-    console.log(file);
+    const { data, filePath } = this.service.readFile();
+    const dataJson = { data };
+    this.updateMany(dataJson);
+    this.service.deleteFile(filePath);
     return of({ filePath: file.filename });
   }
 

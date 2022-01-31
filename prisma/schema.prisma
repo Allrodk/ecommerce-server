@@ -15,6 +15,7 @@ model User {
   name      String
   nickname  String   @unique
   email     String   @unique
+  Admin    Boolean  @default(false)
   birthdate String
   password  String
   imageUrl  String

@@ -23,7 +23,7 @@ export class AuthService {
     } else {
       data.nickname = data.nickname.toLocaleLowerCase();
     }
-  
+
     const { email, nickname, password } = data;
     const user = await this.database.user.findFirst({
       where: { OR: [{ email }, { nickname }] },
