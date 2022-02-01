@@ -33,14 +33,7 @@ export class PlanoService {
       }),
     );
     return createPlanos;
-  }
-
-  async findPerName(name: string): Promise<Plano> {
-    const plano = await this.database.plano.findFirst({
-      where: { name: name },
-    });
-    return plano;
-  }
+  }  
 
   async findAll(): Promise<Plano[]> {
     const plano = await this.database.plano.findMany();
@@ -60,31 +53,6 @@ export class PlanoService {
     return plano;
   }
 
-  async updateSingle(
-    name: string,
-    planoData: UpdateSinglePlanoDto,
-  ): Promise<Plano> {
-    const singlePlano = await this.findPerName(name);
-    const plano = await this.database.plano.update({
-      where: { id: singlePlano.id },
-      data: planoData,
-    });
-    return plano;
-  }
-
-  async updateMany(manyData: UpdatePlanilhaDto): Promise<any[]> {
-    const updatePlanos = [];
-    await Promise.all(
-      manyData.data.map(async (plano) => {
-        const planoExist = await this.findPerName(plano.name);
-        if (planoExist) {
-          updatePlanos.push(await this.updateSingle(plano.name, plano));
-        }
-      }),
-    );
-    return updatePlanos;
-  }
-
   async remove(id: string): Promise<{ message: string }> {
     await this.planoExist(id);
     await this.database.plano.delete({
@@ -101,22 +69,6 @@ export class PlanoService {
       throw new NotFoundException('Plano não encontrado');
     }
     return planoExist;
-  }
-
-  storage() {
-     storage: diskStorage({
-      destination: './Uploads',
-      filename: (req, file, cb) => {
-        const filename: string = file.originalname;
-        const extension: string = extname(file.originalname);
-        const allowedMimes = ['.csv', '.xls', '.xlsx'];
-        if (allowedMimes.includes(extension)) {
-          cb(null, `${filename}`);
-        } else {
-           cb(new Error('Tipo de arquivo inválido'), `${filename}`);
-        }
-      },
-    });
   }
 
   readFile() {
@@ -139,6 +91,38 @@ export class PlanoService {
       }
     }
     return { data, filePath };
+  }
+
+  async updateMany(manyData: UpdatePlanilhaDto): Promise<any[]> {
+    const updatePlanos = [];
+    await Promise.all(
+      manyData.data.map(async (plano) => {
+        const planoExist = await this.findPerName(plano.name);
+        if (planoExist) {
+          updatePlanos.push(await this.updateSingle(plano.name, plano));
+        }
+      }),
+    );
+    return updatePlanos;
+  }
+
+  async findPerName(name: string): Promise<Plano> {
+    const plano = await this.database.plano.findFirst({
+      where: { name: name },
+    });
+    return plano;
+  }
+
+  async updateSingle(
+    name: string,
+    planoData: UpdateSinglePlanoDto,
+  ): Promise<Plano> {
+    const singlePlano = await this.findPerName(name);
+    const plano = await this.database.plano.update({
+      where: { id: singlePlano.id },
+      data: planoData,
+    });
+    return plano;
   }
 
   deleteFile(filePath) {

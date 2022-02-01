@@ -87,6 +87,7 @@ export class PlanoController {
     const dataJson = { data };
     this.updateMany(dataJson);
     this.service.deleteFile(filePath);
+    
     return of({ filePath: file.filename });
   }
 
