@@ -5,8 +5,8 @@ export const Storage = {
   storage: diskStorage({
     destination: './Uploads',
     filename: (req, file, cb) => {
-      const filename: string = file.originalname;
       const extension: string = extname(file.originalname);
+      const filename: string = 'planilha' + extension;
       const allowedMimes = ['.csv', '.xls', '.xlsx'];
       if (allowedMimes.includes(extension)) {
         cb(null, `${filename}`);

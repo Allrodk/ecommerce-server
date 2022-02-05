@@ -1,5 +1,6 @@
 import {
   ConflictException,
+  ConsoleLogger,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -51,7 +52,7 @@ export class UserService {
     return user;
   }
 
-  async update(id: string, userData: UpdateUserDto): Promise<User> {
+  async update(id: string, userData: UpdateUserDto): Promise<User> {   
     const userExists = await this.database.user.findFirst({
       where: { id },
     });
@@ -97,6 +98,7 @@ export class UserService {
   }
 
   async findOne(id: string): Promise<User> {
+    console.log('Entrou no UserService');
     const user = await this.database.user.findUnique({
       where: { id },
     });
@@ -172,7 +174,7 @@ export class UserService {
     }
   }
 
-  async cartList(userId: string) {   
+  async cartList(userId: string) {
     const planos = await this.database.user.findUnique({
       where: { id: userId },
       include: { planos: true },

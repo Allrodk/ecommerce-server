@@ -14,17 +14,21 @@ import { CreatePlanoDto } from './dto/create-plano.dto';
 import { CreateManyPlanoDto } from './dto/create-many-plano.dto';
 import { UpdatePlanoDto } from './dto/update-plano.dto';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
-import { Plano } from '@prisma/client';
+import { Plano, User } from '@prisma/client';
 import { UpdatePlanilhaDto } from './dto/update-planilha.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Observable, of } from 'rxjs';
-import {Storage} from './config'
-
+import { Storage } from './config';
+import { AuthUser } from 'src/auth/auth-user.decorator';
+import { UserService } from 'src/user/user.service';
 
 @ApiTags('plano')
 @Controller('plano')
 export class PlanoController {
-  constructor(private readonly service: PlanoService) {}
+  constructor(
+    private readonly service: PlanoService,
+    private readonly userService: UserService,
+  ) {}
 
   @Post('create')
   @ApiOperation({
@@ -73,8 +77,11 @@ export class PlanoController {
   @ApiOperation({
     summary: 'Edita vários planos',
   })
-  updateMany(@Body() manyData: UpdatePlanilhaDto): Promise<any[]> {
-    return this.service.updateMany(manyData);
+  updateMany(
+    @Body() manyData: UpdatePlanilhaDto,
+    filePath: string,
+  ): Promise<{ message: string }> {
+    return this.service.updateMany(manyData, filePath);
   }
 
   @Post('upload')
@@ -85,10 +92,10 @@ export class PlanoController {
   uploadFile(@UploadedFile() file): Observable<Object> {
     const { data, filePath } = this.service.readFile();
     const dataJson = { data };
-    this.updateMany(dataJson);
-    this.service.deleteFile(filePath);
-    
-    return of({ filePath: file.filename });
+    const response = this.updateMany(dataJson, filePath);
+    console.log(response);    
+    // this.userService.findOne(data[1].id)
+    return of({ message: response });
   }
 
   @Delete('remove/:id')

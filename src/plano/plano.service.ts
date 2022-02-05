@@ -7,8 +7,6 @@ import { Plano } from '@prisma/client';
 import { UpdatePlanilhaDto } from './dto/update-planilha.dto';
 import { UpdateSinglePlanoDto } from './dto/upadate-singlePlano.dto';
 import * as XLSX from 'XLSX';
-import { diskStorage } from 'multer';
-import { extname } from 'path';
 const fs = require('fs');
 
 @Injectable()
@@ -33,7 +31,7 @@ export class PlanoService {
       }),
     );
     return createPlanos;
-  }  
+  }
 
   async findAll(): Promise<Plano[]> {
     const plano = await this.database.plano.findMany();
@@ -73,14 +71,14 @@ export class PlanoService {
 
   readFile() {
     let filePath = '';
-    if (fs.existsSync('./Uploads/UpdateMany100.xlsx')) {
-      filePath = './Uploads/UpdateMany100.xlsx';
+    if (fs.existsSync('./Uploads/planilha.xlsx')) {
+      filePath = './Uploads/planilha.xlsx';
     }
-    if (fs.existsSync('./Uploads/UpdateMany100.xls')) {
-      filePath = './Uploads/UpdateMany100.xls';
+    if (fs.existsSync('./Uploads/planilha.xls')) {
+      filePath = './Uploads/planilha.xls';
     }
-    if (fs.existsSync('./Uploads/UpdateMany100.csv')) {
-      filePath = './Uploads/UpdateMany100.csv';
+    if (fs.existsSync('./Uploads/planilha.csv')) {
+      filePath = './Uploads/planilha.csv';
     }
     let data = [];
     const wb = XLSX.readFile(filePath);
@@ -93,7 +91,10 @@ export class PlanoService {
     return { data, filePath };
   }
 
-  async updateMany(manyData: UpdatePlanilhaDto): Promise<any[]> {
+  async updateMany(
+    manyData: UpdatePlanilhaDto,
+    filePath: string,
+  ): Promise<{ message: string }> {
     const updatePlanos = [];
     await Promise.all(
       manyData.data.map(async (plano) => {
@@ -103,7 +104,8 @@ export class PlanoService {
         }
       }),
     );
-    return updatePlanos;
+    this.deleteFile(filePath);
+    return { message: 'Planilha atualizada com sucesso' };
   }
 
   async findPerName(name: string): Promise<Plano> {
